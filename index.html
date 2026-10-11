@@ -145,7 +145,7 @@ label.sens input{flex:1;accent-color:var(--amber)}
       <li><b>LEFT</b>move stick (push gently to walk)</li>
       <li><b>RIGHT</b>drag to aim</li>
       <li><b>FIRE</b>hold and drag to control spray</li>
-      <li><b>NADES</b>tap HE or FLASH to throw</li>
+      <li><b>NADES</b>hold HE or FLASH to see the arc, release to throw</li>
       <li><b>DESKTOP</b>WASD, mouse, R, 1-3, G/F, Ctrl</li>
     </ul>
     <label class="sens" for="sens">AIM SPEED <input id="sens" type="range" min="8" max="40" value="20"></label>
@@ -380,7 +380,7 @@ let T=0,state='menu',round=1,kills=0,heads=0,stateT=0,bannerT=0,shake=0;
 const input={fx:0,fy:0,fire:false,jump:false,duck:false,mx:0,my:0,keys:{}};
 const sens=$('sens');sens.value=store.get('ss_sens',20);
 const eyeH=()=>1.62-0.48*P.crouch;
-const nades={he:2,fl:2},gren=[],blasts=[];
+const nades={he:2,fl:2},gren=[],blasts=[];let aimKind=null;
 let throwT=0,throwKind='he',pend=null,flashEnd=0,flashDur=1,lookX=0,lookY=0,zoomCur=1,fovPunch=0,fovX=0,landDip=0,roll=0,bobPh=0,swX=0,swY=0,prevYaw=0,prevPit=0;
 
 /* ---------- bots ---------- */
@@ -521,22 +521,41 @@ function throwNade(kind){
   nades[kind]--;throwT=T+.5;pend={t:T+.2,kind};throwKind=kind;
   reloading=false;scoped=false;nextFire=Math.max(nextFire,T+.55);sndClick();updateHud();
 }
-function spawnGren(kind){
+const aimDots=[];
+for(let i=0;i<28;i++){const m=new THREE.Mesh(new THREE.SphereGeometry(.035,6,5),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.8,depthTest:false}));m.visible=false;m.renderOrder=5;scene.add(m);aimDots.push(m)}
+const aimRing=new THREE.Mesh(new THREE.RingGeometry(.3,.4,24),new THREE.MeshBasicMaterial({color:0xf5b83a,side:THREE.DoubleSide,transparent:true,opacity:.9,depthTest:false}));
+aimRing.rotation.x=-Math.PI/2;aimRing.visible=false;aimRing.renderOrder=5;scene.add(aimRing);
+function gState(){
   const pt=P.pitch+.12;
   const dx=-Math.sin(P.yaw)*Math.cos(pt),dy=Math.sin(pt),dz=-Math.cos(P.yaw)*Math.cos(pt);
   const eye=P.feet+eyeH();
   const p=new THREE.Vector3(P.x+dx*.5,eye+dy*.5-.1,P.z+dz*.5);
   if(!los(P.x,eye,P.z,p.x,p.y,p.z))p.set(P.x,eye-.1,P.z);
+  return{p,v:new THREE.Vector3(dx*15+P.vx*.6,dy*15+2.5,dz*15+P.vz*.6)};
+}
+function spawnGren(kind){
+  const s=gState();
   const m=new THREE.Mesh(new THREE.SphereGeometry(.07,10,8),new THREE.MeshLambertMaterial({color:kind==='he'?0x3e5a3a:0xb8bcc2}));
-  m.position.copy(p);scene.add(m);
-  gren.push({kind,m,p,pp:p.clone(),v:new THREE.Vector3(dx*15+P.vx*.6,dy*15+2.5,dz*15+P.vz*.6),pop:T+(kind==='he'?1.8:1.3)});
+  m.position.copy(s.p);scene.add(m);
+  gren.push({kind,m,p:s.p,pp:s.p.clone(),v:s.v,pop:T+(kind==='he'?1.8:1.3)});
   tone(300,.08,.15,'triangle',200);
 }
-function stepGren(g,dt){
+function aimStart(k){if(state==='play'&&nades[k]>0&&T>=throwT)aimKind=k}
+function aimEnd(k){if(aimKind===k){aimKind=null;throwNade(k)}}
+function drawAim(){
+  if(!aimKind||state!=='play'){aimDots.forEach(d=>d.visible=false);aimRing.visible=false;return}
+  const s=gState(),g={p:s.p,pp:s.p.clone(),v:s.v,m:{position:{copy(){}},rotation:{x:0}}};
+  const fuse=aimKind==='he'?1.8:1.3;let n=0;
+  for(let t=0,i=0;t<fuse&&n<aimDots.length;t+=1/30,i++){stepGren(g,1/30,true);if(i%2===0){aimDots[n].position.copy(g.p);aimDots[n++].visible=true}}
+  for(let j=n;j<aimDots.length;j++)aimDots[j].visible=false;
+  aimRing.material.color.setHex(aimKind==='he'?0xf5b83a:0xdfe6ee);
+  aimRing.position.set(g.p.x,Math.max(g.p.y,.05),g.p.z);aimRing.visible=true;
+}
+function stepGren(g,dt,quiet){
   const n=Math.max(1,Math.ceil(dt*120)),h=dt/n;
   for(let s=0;s<n;s++){
     g.pp.copy(g.p);g.v.y-=16*h;g.p.addScaledVector(g.v,h);
-    if(g.p.y<.07){g.p.y=.07;if(g.v.y<0){g.v.y=-g.v.y*.35;g.v.x*=.8;g.v.z*=.8;if(g.v.y<.8)g.v.y=0;else tone(520,.04,.06,'square')}}
+    if(g.p.y<.07){g.p.y=.07;if(g.v.y<0){g.v.y=-g.v.y*.35;g.v.x*=.8;g.v.z*=.8;if(g.v.y<.8)g.v.y=0;else if(!quiet)tone(520,.04,.06,'square')}}
     for(const b of boxes){
       const cx=clamp(g.p.x,b.x0,b.x1),cy=clamp(g.p.y,0,b.h),cz=clamp(g.p.z,b.z0,b.z1);
       const dx=g.p.x-cx,dy=g.p.y-cy,dz=g.p.z-cz,d2=dx*dx+dy*dy+dz*dz;
@@ -545,7 +564,7 @@ function stepGren(g,dt){
         const d=Math.sqrt(d2),nx=dx/d,ny=dy/d,nz=dz/d;
         g.p.set(cx+nx*.071,cy+ny*.071,cz+nz*.071);
         const vn=g.v.x*nx+g.v.y*ny+g.v.z*nz;
-        if(vn<0){g.v.x-=1.4*vn*nx;g.v.y-=1.4*vn*ny;g.v.z-=1.4*vn*nz;g.v.multiplyScalar(.82);if(vn<-2)tone(420,.04,.06,'square')}
+        if(vn<0){g.v.x-=1.4*vn*nx;g.v.y-=1.4*vn*ny;g.v.z-=1.4*vn*nz;g.v.multiplyScalar(.82);if(vn<-2&&!quiet)tone(420,.04,.06,'square')}
       }
     }
   }
@@ -600,7 +619,7 @@ function flashPop(p){
 /* ---------- rounds ---------- */
 function newRound(){
   const n=Math.min(10,2+round);
-  for(const g of gren)scene.remove(g.m);gren.length=0;nades.he=2;nades.fl=2;flashEnd=0;pend=null;
+  for(const g of gren)scene.remove(g.m);gren.length=0;aimKind=null;nades.he=2;nades.fl=2;flashEnd=0;pend=null;
   spawnBots(n);
   P.x=0;P.z=21;P.feet=0;P.vx=P.vz=P.vy=0;P.yaw=0;P.pitch=0;P.punchX=P.punchY=0;
   P.hp=Math.min(100,P.hp+(round>1?35:0));if(round===1){P.hp=100;P.armor=100}else P.armor=100;
@@ -748,7 +767,7 @@ hold('bJump',()=>{input.jump=true},()=>{input.jump=false});
 hold('bCrouch',()=>{input.duck=!input.duck},null);
 hold('bRel',startReload,null);
 hold('bScope',()=>{toggleScope()},null);
-hold('bHE',()=>throwNade('he'),null);hold('bFl',()=>throwNade('fl'),null);
+hold('bHE',()=>aimStart('he'),()=>aimEnd('he'));hold('bFl',()=>aimStart('fl'),()=>aimEnd('fl'));
 document.querySelectorAll('.slot').forEach(s=>s.addEventListener('pointerdown',e=>{e.stopPropagation();audioInit();selectWeapon(+s.dataset.w)}));
 function toggleScope(){if(cur!==2||reloading||state!=='play'&&state!=='count')return;scoped=!scoped;sndClick()}
 document.addEventListener('contextmenu',e=>e.preventDefault());
@@ -758,10 +777,10 @@ addEventListener('keydown',e=>{
   input.keys[e.code]=true;
   if(e.code==='KeyR')startReload();
   if(e.code==='Digit1')selectWeapon(0);if(e.code==='Digit2')selectWeapon(1);if(e.code==='Digit3')selectWeapon(2);
-  if(e.code==='KeyG')throwNade('he');if(e.code==='KeyF')throwNade('fl');
+  if(!e.repeat){if(e.code==='KeyG')aimStart('he');if(e.code==='KeyF')aimStart('fl')}
   if(e.code==='Space')e.preventDefault();
 });
-addEventListener('keyup',e=>{input.keys[e.code]=false});
+addEventListener('keyup',e=>{input.keys[e.code]=false;if(e.code==='KeyG')aimEnd('he');if(e.code==='KeyF')aimEnd('fl')});
 $('gl').addEventListener('mousedown',e=>{
   if(state==='menu'||state==='over')return;
   if(document.pointerLockElement!==$('gl')){try{$('gl').requestPointerLock()}catch(_){}return}
@@ -833,6 +852,7 @@ function update(dt){
   if(pend&&T>=pend.t){spawnGren(pend.kind);pend=null}
   for(let i=gren.length-1;i>=0;i--){const g=gren[i];stepGren(g,dt);if(T>=g.pop){popGren(g);gren.splice(i,1)}}
   for(let i=blasts.length-1;i>=0;i--){const q=blasts[i];q.life-=dt;const k=1-q.life/q.max;q.m.scale.setScalar(q.r*(.3+.7*Math.sqrt(k)));q.m.material.opacity=clamp(q.life/q.max,0,1)*.9;if(q.life<=0){scene.remove(q.m);q.m.material.dispose();blasts.splice(i,1)}}
+  drawAim();
   const fr=flashEnd-T;el.fo.style.opacity=fr>0?(fr>flashDur*.7?1:fr/(flashDur*.7)):0;
 
   // fx
