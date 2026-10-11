@@ -97,6 +97,18 @@ label.sens input{flex:1;accent-color:var(--amber)}
 .res b{display:block;font-size:clamp(28px,7vmin,42px);color:var(--hud);font-variant-numeric:tabular-nums;line-height:1.05}
 #rot{position:fixed;left:50%;bottom:10px;transform:translateX(-50%);z-index:20;background:var(--amber);color:#1a1305;font-weight:700;letter-spacing:.08em;padding:6px 14px;border-radius:3px;display:none;pointer-events:none}
 @media (orientation:portrait){#rot{display:block}}
+/* three-finger layout: fire top-right under the right index finger, CF-mobile style cluster at bottom-right */
+#bFire{right:calc(env(safe-area-inset-right,0px) + 10px);top:calc(env(safe-area-inset-top,0px) + 10px);bottom:auto;left:auto}
+#bScope{right:calc(env(safe-area-inset-right,0px) + 22px);top:calc(env(safe-area-inset-top,0px) + 22px + clamp(78px,22vmin,112px));bottom:auto}
+#bJump{width:clamp(62px,17vmin,80px);height:clamp(62px,17vmin,80px);right:calc(env(safe-area-inset-right,0px) + 4vw);bottom:calc(env(safe-area-inset-bottom,0px) + 20vh)}
+#bCrouch{right:calc(env(safe-area-inset-right,0px) + 4vw + 8px);bottom:calc(env(safe-area-inset-bottom,0px) + 4vh)}
+#bRel{right:calc(env(safe-area-inset-right,0px) + 4vw + clamp(80px,22vmin,100px));bottom:calc(env(safe-area-inset-bottom,0px) + 10vh)}
+#bHE{right:calc(env(safe-area-inset-right,0px) + 4vw + clamp(150px,40vmin,180px));bottom:calc(env(safe-area-inset-bottom,0px) + 4vh)}
+#bFl{right:calc(env(safe-area-inset-right,0px) + 4vw + clamp(150px,40vmin,180px));bottom:calc(env(safe-area-inset-bottom,0px) + 4vh + clamp(60px,16vmin,76px))}
+#slots{right:calc(env(safe-area-inset-right,0px) + 20px + clamp(78px,22vmin,112px));top:calc(env(safe-area-inset-top,0px) + 10px);flex-direction:row;gap:4px}
+.slot{min-width:0;padding:5px 8px;text-align:center;font-size:clamp(12px,3vmin,16px)}
+.slot b{margin-right:4px}
+#feed{right:auto;left:calc(env(safe-area-inset-left,0px) + 10px);top:calc(env(safe-area-inset-top,0px) + 130px);align-items:flex-start}
 @media (prefers-reduced-motion:reduce){#banner,#hm{transition:none}}
 </style>
 
@@ -144,7 +156,7 @@ label.sens input{flex:1;accent-color:var(--amber)}
     <ul class="tips">
       <li><b>LEFT</b>move stick (push gently to walk)</li>
       <li><b>RIGHT</b>drag to aim</li>
-      <li><b>FIRE</b>hold and drag to control spray</li>
+      <li><b>FIRE</b>top-right, right index finger</li>
       <li><b>NADES</b>hold HE or FLASH to see the arc, release to throw</li>
       <li><b>DESKTOP</b>WASD, mouse, R, 1-3, G/F, Ctrl</li>
     </ul>
