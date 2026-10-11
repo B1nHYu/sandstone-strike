@@ -46,7 +46,7 @@ body{background:var(--ink);color:var(--hud);font-family:var(--display);overflow:
 #top{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 8px);transform:translateX(-50%);display:flex;gap:10px;align-items:center;
   background:var(--panel);padding:4px 14px;border-radius:4px;font-weight:700;letter-spacing:.06em;font-size:clamp(16px,4.4vmin,24px)}
 #top em{font-style:normal;color:var(--red)}
-#radar{position:absolute;left:calc(env(safe-area-inset-left,0px) + 10px);top:calc(env(safe-area-inset-top,0px) + 10px);width:112px;height:112px;border-radius:50%;
+#radar{position:absolute;left:calc(env(safe-area-inset-left,0px) + 22px + clamp(78px,22vmin,112px));top:calc(env(safe-area-inset-top,0px) + 10px);width:112px;height:112px;border-radius:50%;
   background:rgba(12,14,18,.5);border:1px solid rgba(255,255,255,.18)}
 #feed{position:absolute;right:calc(env(safe-area-inset-right,0px) + 10px);top:calc(env(safe-area-inset-top,0px) + 10px);display:flex;flex-direction:column;align-items:flex-end;gap:3px}
 #feed div{background:rgba(10,12,15,.62);padding:2px 9px;border-radius:3px;font-weight:600;font-size:clamp(14px,3.6vmin,19px);letter-spacing:.04em;border:1px solid rgba(245,184,58,.5)}
@@ -64,14 +64,14 @@ body{background:var(--ink);color:var(--hud);font-family:var(--display);overflow:
 .btn{position:absolute;display:grid;place-items:center;border-radius:50%;background:rgba(14,16,20,.5);border:2px solid rgba(245,184,58,.7);color:var(--hud);
   font-weight:700;letter-spacing:.08em;font-size:clamp(13px,3.4vmin,18px);touch-action:none}
 .btn.dn{background:rgba(245,184,58,.45)}
-#bFire{width:clamp(78px,22vmin,112px);height:clamp(78px,22vmin,112px);right:calc(env(safe-area-inset-right,0px) + 5vw);bottom:calc(env(safe-area-inset-bottom,0px) + 16vh);border-color:var(--red);font-size:clamp(16px,4.2vmin,22px)}
-#bJump{width:clamp(54px,14vmin,70px);height:clamp(54px,14vmin,70px);right:calc(env(safe-area-inset-right,0px) + 5vw + clamp(86px,24vmin,124px));bottom:calc(env(safe-area-inset-bottom,0px) + 8vh)}
+#bFire{width:clamp(78px,22vmin,112px);height:clamp(78px,22vmin,112px);left:calc(env(safe-area-inset-left,0px) + 10px);top:calc(env(safe-area-inset-top,0px) + 10px);border-color:var(--red);background:rgba(229,72,59,.22);font-size:clamp(16px,4.2vmin,22px)}
+#bJump{width:clamp(66px,18vmin,90px);height:clamp(66px,18vmin,90px);right:calc(env(safe-area-inset-right,0px) + 5vw);bottom:calc(env(safe-area-inset-bottom,0px) + 16vh)}
 #bRel{width:clamp(50px,13vmin,64px);height:clamp(50px,13vmin,64px);right:calc(env(safe-area-inset-right,0px) + 5vw + clamp(96px,26vmin,134px));bottom:calc(env(safe-area-inset-bottom,0px) + 16vh + clamp(60px,16vmin,84px))}
 #bScope{width:clamp(50px,13vmin,64px);height:clamp(50px,13vmin,64px);right:calc(env(safe-area-inset-right,0px) + 5vw + 6px);bottom:calc(env(safe-area-inset-bottom,0px) + 16vh + clamp(94px,26vmin,128px))}
 #bCrouch{width:clamp(50px,13vmin,64px);height:clamp(50px,13vmin,64px);right:calc(env(safe-area-inset-right,0px) + 5vw + clamp(8px,2vmin,14px));bottom:calc(env(safe-area-inset-bottom,0px) + 3vh)}
 #bScope{display:none}
 #bHE,#bFl{width:clamp(52px,13.5vmin,66px);height:clamp(52px,13.5vmin,66px);right:calc(env(safe-area-inset-right,0px) + 5vw + clamp(176px,48vmin,236px));font-size:clamp(12px,3vmin,16px);border-color:#9fb89a}
-#bHE{bottom:calc(env(safe-area-inset-bottom,0px) + 8vh)}
+#bHE{right:calc(env(safe-area-inset-right,0px) + 5vw + clamp(86px,24vmin,124px));bottom:calc(env(safe-area-inset-bottom,0px) + 8vh)}
 #bFl{bottom:calc(env(safe-area-inset-bottom,0px) + 8vh + clamp(60px,16vmin,80px));border-color:#cfd6df}
 #flashov{position:absolute;inset:0;background:#fff;opacity:0}
 #slots{position:absolute;right:calc(env(safe-area-inset-right,0px) + 8px);top:36%;display:flex;flex-direction:column;gap:6px}
@@ -96,7 +96,7 @@ label.sens input{flex:1;accent-color:var(--amber)}
 .res div{background:rgba(255,255,255,.06);padding:10px 12px;border-radius:3px;font-size:clamp(14px,3.2vmin,17px);letter-spacing:.08em;color:#aab2bb}
 .res b{display:block;font-size:clamp(28px,7vmin,42px);color:var(--hud);font-variant-numeric:tabular-nums;line-height:1.05}
 #rot{position:fixed;left:50%;bottom:10px;transform:translateX(-50%);z-index:20;background:var(--amber);color:#1a1305;font-weight:700;letter-spacing:.08em;padding:6px 14px;border-radius:3px;display:none;pointer-events:none}
-@media (orientation:portrait){#rot{display:block}}
+@media (orientation:portrait){#rot{display:block}#radar{left:calc(env(safe-area-inset-left,0px) + 10px);top:calc(env(safe-area-inset-top,0px) + 22px + clamp(78px,22vmin,112px))}}
 @media (prefers-reduced-motion:reduce){#banner,#hm{transition:none}}
 </style>
 
@@ -144,7 +144,7 @@ label.sens input{flex:1;accent-color:var(--amber)}
     <ul class="tips">
       <li><b>LEFT</b>move stick (push gently to walk)</li>
       <li><b>RIGHT</b>drag to aim</li>
-      <li><b>FIRE</b>hold and drag to control spray</li>
+      <li><b>FIRE</b>top-left, hold with your index finger</li>
       <li><b>NADES</b>hold HE or FLASH to see the arc, release to throw</li>
       <li><b>DESKTOP</b>WASD, mouse, R, 1-3, G/F, Ctrl</li>
     </ul>
